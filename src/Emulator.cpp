@@ -3,3 +3,8 @@
 //
 
 #include "Emulator.h"
+
+void Emulator::step()
+{
+    cpu.step();
+}

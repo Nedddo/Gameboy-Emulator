@@ -54,7 +54,7 @@ class GB_CPU
         };
         // specialized 16-bit registers: stack pointer and program counter
         uint16_t SP = 0x00;
-        uint16_t PC = 0x00;
+        uint16_t PC = 0x100;
         // CPU's bus
         GB_MemoryBus bus;
         // current opcode to be decoded and executed
@@ -68,6 +68,19 @@ class GB_CPU
         // --------- GENERIC CPU INSTRUCTIONS ------------
         // most instructions in the Game Boy aren't unique, many do the same thing just with different operands
         // for example, there's something like >90 LD instructions - which are more or less the same
+        void ADD(uint8_t n);
+        void SUB(uint8_t n);
+        void CP(uint8_t n);
+        void INC(uint8_t &reg);
+        void DEC(uint8_t& reg);
+        // load from one register to another
+        void LD(uint8_t& to, const uint8_t& from);
+        // load an immediate to a register
+        void LDImmediate(uint8_t& reg);
+        void LDImmediate(uint16_t& reg);
+        // load from/to memory to/from a register
+        void LD(uint8_t& reg, uint16_t address);
+        void LD(uint16_t& address, uint8_t& reg);
     public:
         // responsible for the fetch-decode-execute of the next instruction - Returns T-cycles taken for last instruction
         unsigned int step();
