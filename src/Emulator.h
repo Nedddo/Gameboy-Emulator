@@ -9,7 +9,7 @@
 
 // Exists more or less as a container which handles the interoperation of the various components
 class Emulator
-{]
+{
     private:
         GB_CPU cpu;
         GB_PPU ppu;

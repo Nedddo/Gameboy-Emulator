@@ -8,6 +8,19 @@
 #include <fstream>
 #include <iostream>
 
+// STATIC INITALIZATIONS
+uint8_t* GB_MemoryBus::ROM = nullptr;
+uint8_t GB_MemoryBus::ROMBank = 0x01;
+uint32_t GB_MemoryBus:: ROMSize = 0x00;
+uint8_t GB_MemoryBus::VRAM[0x2000] = {};
+uint8_t GB_MemoryBus::RAM[0x2000] = {};
+uint8_t GB_MemoryBus::OAM[0x00A0] = {};
+uint8_t GB_MemoryBus::IO[0x004C] = {};
+uint8_t GB_MemoryBus::HRAM[0x7F] = {};
+uint8_t GB_MemoryBus::interruptReg = 0x00;
+GB_MemoryBus* GB_MemoryBus::VRAMClaimer = nullptr;
+GB_MemoryBus* GB_MemoryBus::OAMClaimer = nullptr;
+
 void GB_MemoryBus::loadRom(const std::string &path)
 {
     std::ifstream is;
@@ -20,7 +33,7 @@ void GB_MemoryBus::loadRom(const std::string &path)
     }
     // get size of rom
     is.seekg(0, std::ios::end);
-    ROMSize = is.tellg();
+    GB_MemoryBus::ROMSize = is.tellg();
     is.seekg(0, std::ios::beg);
     const std::string name = get_filename(path);
     std::cout << "Loading ROM: " << get_filename(path) << "(" << ROMSize << " Bytes)" << "\n";
