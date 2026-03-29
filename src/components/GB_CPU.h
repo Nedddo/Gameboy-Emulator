@@ -80,12 +80,15 @@ class GB_CPU
         void LDImmediate(uint16_t& reg);
         // load from/to memory to/from a register
         void LD(uint8_t& reg, uint16_t address);
-        void LD(uint16_t& address, uint8_t& reg);
+        void LD(const uint16_t& address, const uint8_t& reg);
     public:
+        // set initial register values to their post boot rom values, the reason this isnt in the constructor is
+        // that in future, I may want to emulate the actual boot rom
+        void init();
         // responsible for the fetch-decode-execute of the next instruction - Returns T-cycles taken for last instruction
         unsigned int step();
         // handy print functions for debugging
-        void printRegisters();
+        void printRegisters() const;
 
 };
 
