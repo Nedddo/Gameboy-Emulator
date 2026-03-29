@@ -1,8 +1,9 @@
 #include <iostream>
 
+#include "components/GB_CPU.h"
+
 int main()
 {
-    // blank project, just setup for initial commit
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
+    GB_CPU cpu;
+    cpu.printRegisters();
 }
