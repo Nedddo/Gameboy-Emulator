@@ -14,6 +14,7 @@ class Emulator
         GB_CPU cpu;
         GB_PPU ppu;
     public:
+        Emulator();
         // progresses the emulator by one instruction
         void step();
 };

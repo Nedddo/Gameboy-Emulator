@@ -4,7 +4,12 @@
 
 #include "Emulator.h"
 
+Emulator::Emulator()
+{
+    cpu.init();
+}
+
 void Emulator::step()
 {
-    cpu.step();
+    unsigned int cycles = cpu.step();
 }
