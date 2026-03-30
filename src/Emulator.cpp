@@ -12,4 +12,6 @@ Emulator::Emulator()
 void Emulator::step()
 {
     unsigned int cycles = cpu.step();
+    // TO DO ppu.step(cycles)
+    // MAYBE apu.step(cycles) (sound, dunno if thats in the projects scope)
 }
