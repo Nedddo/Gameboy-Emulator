@@ -193,9 +193,20 @@ void GB_CPU::LD(const uint16_t& address, const uint8_t& reg)
     bus.write8Bit(address, reg);
 }
 
-// big ol' fuck off switch statement, putting at bottom of file for cleanliness, outta sight, outta mind
+void GB_CPU::JP()
+{
+    PC = bus.read16Bit(PC);
+}
+
+void GB_CPU::JR()
+{
+    // JR uses a signed immediate (lets us go backwards!!!)
+    PC += static_cast<int8_t>(bus.read8Bit(PC));
+}
+
 unsigned int GB_CPU::decodeAndExecute()
 {
+    // big ol' fuck off switch statement, putting at bottom of file for cleanliness, outta sight, outta mind
     switch (opcode)
     {
         // NOP - does nothing
