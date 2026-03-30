@@ -22,8 +22,46 @@ void GB_CPU::init()
 
 void GB_CPU::handleInterrupts()
 {
-    uint8_t IE = bus.read8Bit(0xFFFF);
-    uint8_t IF = bus.read8Bit(0xFF0F);
+    // The IE register -> what interrupts should we handle
+    const uint8_t IE = bus.read8Bit(0xFFFF);
+    // The IF register -> what interrupts are being requested
+    const uint8_t IF = bus.read8Bit(0xFF0F);
+    // of the requested interrupts, which are enabled
+    uint8_t handle = IE & IF;
+    if (handle)
+    {
+        // DISABLE IME, this needs to be done in a specific way. Ignoring for now
+        if (handle & 0x01)
+        {
+            // checks if bit 0 is set, this corresponds to VBLANK (highest priority)
+            PC = VBLANK;
+            return;
+        }
+        if (handle & 0x02)
+        {
+            // checks if bit 1 is set, this corresponds to STAT
+            PC = STAT;
+            return;
+        }
+        if (handle & 0x04)
+        {
+            // checks if bit 2 is set, this corresponds to TIMER
+            PC = TIMER;
+            return;
+        }
+        if (handle & 0x08)
+        {
+            // checks if bit 3 is set, this corresponds to SERIAL
+            PC = SERIAL;
+            return;
+        }
+        if (handle & 0x10)
+        {
+            // checks if bit 2 is set, this corresponds to JOYPAD (lowest priority)
+            PC = JOYPAD;
+            return;
+        }
+    }
 }
 
 void GB_CPU::fetch()
@@ -33,6 +71,7 @@ void GB_CPU::fetch()
 
 unsigned int GB_CPU::step()
 {
+    if (IME) handleInterrupts();
     fetch();
     return decodeAndExecute();
 }
