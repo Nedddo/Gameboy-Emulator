@@ -14,6 +14,7 @@ class GB_CPU
     private:
         // ----------- REGISTERS -------------
         // Union means that AF and the struct share the same space in memory
+        // AF (Accumulator and Flags register pair)
         union
         {
             // 16-bit Anonymous struct containing 2 8bit registers
@@ -25,6 +26,7 @@ class GB_CPU
             // 16-bit integer containing the structs pair
             uint16_t AF = 0x00;
         };
+        // BC
         union
         {
             struct
@@ -34,6 +36,7 @@ class GB_CPU
             };
             uint16_t BC = 0x00;
         };
+        // DE
         union
         {
             struct
@@ -43,6 +46,7 @@ class GB_CPU
             };
             uint16_t DE = 0x00;
         };
+        // HL (often used as a pointer)
         union
         {
             struct
@@ -54,14 +58,41 @@ class GB_CPU
         };
         // specialized 16-bit registers: stack pointer and program counter
         uint16_t SP = 0x00;
-        uint16_t PC = 0x100;
+        uint16_t PC = 0x00;
         // CPU's bus
         GB_MemoryBus bus;
         // current opcode to be decoded and executed
-        uint8_t opcode = 0x0;
+        uint8_t opcode = 0x00;
+        // ------ CONSTANTS ------
+        // --> Bitmasks for the F register:
+        // anonymous enum because Flags::Z would be chopped and make flag checks MORE cumbersome, which i dont want
+        // does make function syntax a bit chopped but ah well, such is life!
+        enum : uint8_t
+        {
+        // set if last operation resulted in 0
+        Z  = 0x80,
+        // set if last operation was a subtraction
+        N  = 0x40,
+        // set if last operation had a half carry
+        HC = 0x20,
+        // set if last operation had a carry
+        CY = 0x10
+        };
         // ---------- METHODS ------------
+        // --> Flag methods, unnecessary ig, just cleaner (and clearer!) than bitwise operations
+        // returns true if flag is set
+        bool isFlagSet(const decltype(Z) flag) const { return (F & flag) == F; }
+        // sets given flag to 1
+        void setFlag(const decltype(Z) flag) { F |= flag; }
+        // sets specified flag to off
+        void clearFlag(const decltype(Z) flag) { F &= ~flag; }
+        // sets F register to zero
+        void clearFlags() { F = 0x00; }
+        // sets all flags except for specified flag to 0
+        void keepFlag(const decltype(Z) flag) { F &= flag; }
         // sets opcode to the current byte at PC
         void fetch();
+        // helper function to see if a flag is set
         // decodes and executes... duh. Easier to put these together as one method - Returns the T-cycles for the
         // entire fetch-decode-execute, this is obviously a simplification, but calculating this seems unnecessary
         unsigned int decodeAndExecute();
@@ -81,6 +112,11 @@ class GB_CPU
         // load from/to memory to/from a register
         void LD(uint8_t& reg, uint16_t address);
         void LD(const uint16_t& address, const uint8_t& reg);
+        // --> JUMPS
+        // Jumps to immediate 16-Bit value
+        void JP();
+        // Jump relative, adds an immediate signed 8 bit value to PC
+        void JR();
     public:
         // set initial register values to their post boot rom values, the reason this isnt in the constructor is
         // that in future, I may want to emulate the actual boot rom

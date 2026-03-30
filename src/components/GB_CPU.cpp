@@ -53,19 +53,19 @@ void GB_CPU::ADD(const uint8_t n)
     if (0xFF - n < A)
     {
         // set carry flag
-        F |= 0x10;
+        setFlag(CY);
     }
     // check for half carry
     if ((A & 0xF) + (n & 0xF) > 0xF)
     {
         // enable half carry flag
-        F |= 0x20;
+        setFlag(HC);
     }
     // technically better to do this AFTER updating A, (then we can just do A == 0) but looks nicer
     if (A + n == 0)
     {
         // enable Z flag
-        F |= 0x80;
+        setFlag(Z);
     }
     // update accumulator register
     A += n;
@@ -73,25 +73,27 @@ void GB_CPU::ADD(const uint8_t n)
 
 void GB_CPU::SUB(const uint8_t n)
 {
-    // Addition updates all flags, so we 0 the F register
-    F = 0x40;
+    // Subtraction sets updates all flags
+    clearFlags();
+    // set N flag as subtraction is, in fact subtraction
+    setFlag(N);
     // check for carry
     if (n > A)
     {
         // set carry flag
-        F |= 0x10;
+        setFlag(CY);
     }
     // check for half carry
     if ((n & 0xF) > (A & 0xF))
     {
         // enable half carry flag
-        F |= 0x20;
+        setFlag(HC);
     }
     // technically better to do this AFTER updating A, (then we can just do A == 0) but looks nicer
     if (A - n == 0)
     {
         // enable Z flag
-        F |= 0x80;
+        setFlag(Z);
     }
     // update accumulator register
     A -= n;
@@ -100,44 +102,46 @@ void GB_CPU::SUB(const uint8_t n)
 void GB_CPU::CP(const uint8_t n)
 {
     // Comparisons are basically subtractions where we throw away the result
-    // Addition updates all flags, so we 0 the F register
-    F = 0x40;
+    // Subtraction sets updates all flags
+    clearFlags();
+    // set N flag as subtraction is, in fact subtraction
+    setFlag(N);
     // check for carry
     if (n > A)
     {
         // set carry flag
-        F |= 0x10;
+        setFlag(CY);
     }
     // check for half carry
     if ((n & 0xF) > (A & 0xF))
     {
         // enable half carry flag
-        F |= 0x20;
+        setFlag(HC);
     }
     // technically better to do this AFTER updating A, (then we can just do A == 0) but looks nicer
     if (A - n == 0)
     {
         // enable Z flag
-        F |= 0x80;
+        setFlag(Z);
     }
 }
 
 void GB_CPU::INC(uint8_t& reg)
 {
-    // INC effects Z flag, H flag and unsets N flag.
-    // Set effected flags to 0, so we can update them:
-    F &= 0x10;
+    // INC effects Z flag, HC flag and unsets N flag.
+    // keep CY as its previous value, zero all else
+    keepFlag(CY);
     // check for half carry
     if ((reg & 0xF) + 1 > 0xF)
     {
         // enable half carry flag
-        F |= 0x20;
+        setFlag(HC);
     }
     // increment register and update 0 flag
     if (++reg == 0)
     {
         // enable zero flag
-        F |= 0x80;
+        setFlag(Z);
     }
 }
 
@@ -145,20 +149,20 @@ void GB_CPU::DEC(uint8_t& reg)
 {
     // DEC effects Z flag, H flag and sets N flag.
     // Set effected flags to 0, so we can update them:
-    F &= 0x10;
+    keepFlag(CY);
     // Set N flag as DEC is a type of subtraction
-    F |= 0x40;
+    setFlag(N);
     // check for half borrow
     if ((reg & 0xF) < 0x01)
     {
         // enable half carry flag
-        F |= 0x20;
+        setFlag(HC);
     }
     // decrement register and update 0 flag
     if (--reg == 0)
     {
         // enable zero flag
-        F |= 0x80;
+        setFlag(Z);
     }
 }
 
