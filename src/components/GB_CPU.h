@@ -92,9 +92,8 @@ class GB_CPU
         void keepFlag(const decltype(Z) flag) { F &= flag; }
         // sets opcode to the current byte at PC
         void fetch();
-        // helper function to see if a flag is set
-        // decodes and executes... duh. Easier to put these together as one method - Returns the T-cycles for the
-        // entire fetch-decode-execute, this is obviously a simplification, but calculating this seems unnecessary
+        /*** decodes and executes... duh. Easier to put these together as one method - Returns the T-cycles for the
+        entire fetch-decode-execute, this is obviously a simplification, but calculating this seems unnecessary */
         unsigned int decodeAndExecute();
         // --------- GENERIC CPU INSTRUCTIONS ------------
         // most instructions in the Game Boy aren't unique, many do the same thing just with different operands
@@ -104,26 +103,26 @@ class GB_CPU
         void CP(uint8_t n);
         void INC(uint8_t &reg);
         void DEC(uint8_t& reg);
-        // load from one register to another
+        /// load from one register to another
         void LD(uint8_t& to, const uint8_t& from);
-        // load an immediate to a register
+        /// load an immediate to a register
         void LDImmediate(uint8_t& reg);
         void LDImmediate(uint16_t& reg);
         // load from/to memory to/from a register
         void LD(uint8_t& reg, uint16_t address);
         void LD(const uint16_t& address, const uint8_t& reg);
         // --> JUMPS
-        // Jumps to immediate 16-Bit value
+        /// Jumps to immediate 16-Bit value
         void JP();
-        // Jump relative, adds an immediate signed 8 bit value to PC
+        /// Jump relative, adds an immediate signed 8 bit value to PC
         void JR();
     public:
-        // set initial register values to their post boot rom values, the reason this isnt in the constructor is
-        // that in future, I may want to emulate the actual boot rom
+        /** set initial register values to their post boot rom values, the reason this isnt in the constructor is
+        that in future, I may want to emulate the actual boot rom */
         void init();
-        // responsible for the fetch-decode-execute of the next instruction - Returns T-cycles taken for last instruction
+        /// responsible for the fetch-decode-execute of the next instruction - Returns T-cycles taken for last instruction
         unsigned int step();
-        // handy print functions for debugging
+        /// handy print functions for debugging
         void printRegisters() const;
 
 };

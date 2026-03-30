@@ -556,6 +556,59 @@ unsigned int GB_CPU::decodeAndExecute()
             LD(A, HL);
             return 0x08;
         }
+        // ----- JUMP INSTRUCTIONS -----
+        // (we'll include CALLS and RST's here too)
+        // JP u16
+        case 0xC3:
+        {
+            JP();
+            return 0x10;
+        }
+        // JP NZ, u16
+        case 0xC2:
+        {
+            // Jumps if Z flag isn't set (is this comment really necessary?)
+            if (!isFlagSet(Z))
+            {
+                JP();
+                return 0x10;
+            }
+            return 0x0C;
+        }
+        // JP NC, u16
+        case 0xD2:
+        {
+            // Jumps if CY flag isn't set
+            if (!isFlagSet(CY))
+            {
+                JP();
+                return 0x10;
+            }
+            return 0x0C;
+        }
+        // JP Z, u16
+        case 0xCA:
+        {
+            // Jumps if Z flag IS set
+            if (isFlagSet(Z))
+            {
+                JP();
+                return 0x10;
+            }
+            return 0x0C;
+        }
+        // JP C, u16
+        case 0xDA:
+        {
+            // Jumps if Z flag IS set
+            if (isFlagSet(CY))
+            {
+                JP();
+                return 0x10;
+            }
+            return 0x0C;
+        }
+
         default:
         {
             std::cout << "\x1b[1;31mUnknown opcode: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<unsigned>(opcode) << "\x1b[1;0m" << std::endl;

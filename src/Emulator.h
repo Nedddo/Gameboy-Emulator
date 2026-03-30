@@ -7,7 +7,7 @@
 #include "components/GB_CPU.h"
 #include "components/GB_PPU.h"
 
-// Exists more or less as a container which handles the interoperation of the various components
+/// Exists more or less as a container which handles the interoperation of the various components
 class Emulator
 {
     private:
