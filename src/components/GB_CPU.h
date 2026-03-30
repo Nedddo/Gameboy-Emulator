@@ -61,6 +61,8 @@ class GB_CPU
         uint16_t PC = 0x00;
         // CPU's bus
         GB_MemoryBus bus;
+        // this is the CPUs interrupt master enabler, if it is set to false, no matter what NO interrupts will be handled
+        bool IME = false;
         // current opcode to be decoded and executed
         uint8_t opcode = 0x00;
         // ------ CONSTANTS ------
@@ -78,6 +80,23 @@ class GB_CPU
         // set if last operation had a carry
         CY = 0x10
         };
+        // these are some memory address constants for RST and interrupts
+        static constexpr uint16_t
+        // --> RST memory addresses
+        RST0 = 0x00,
+        RST1 = 0x08,
+        RST2 = 0x10,
+        RST3 = 0x18,
+        RST4 = 0x20,
+        RST5 = 0x28,
+        RST6 = 0x30,
+        RST7 = 0x38,
+        // --> Interrupt vectors
+        VBLANK = 0x40,
+        STAT   = 0x48,
+        TIMER  = 0x50,
+        SERIAL = 0x58,
+        JOYPAD = 0x60;
         // ---------- METHODS ------------
         // --> Flag methods, unnecessary ig, just cleaner (and clearer!) than bitwise operations
         // returns true if flag is set
@@ -91,6 +110,8 @@ class GB_CPU
         // sets all flags except for specified flag to 0
         void keepFlag(const decltype(Z) flag) { F &= flag; }
         // sets opcode to the current byte at PC
+        // --------- HELPER FUNCTIONS FOR THE MAIN STEP LOGIC -------------
+        void handleInterrupts();
         void fetch();
         /*** decodes and executes... duh. Easier to put these together as one method - Returns the T-cycles for the
         entire fetch-decode-execute, this is obviously a simplification, but calculating this seems unnecessary */
