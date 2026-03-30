@@ -20,6 +20,12 @@ void GB_CPU::init()
 }
 
 
+void GB_CPU::handleInterrupts()
+{
+    uint8_t IE = bus.read8Bit(0xFFFF);
+    uint8_t IF = bus.read8Bit(0xFF0F);
+}
+
 void GB_CPU::fetch()
 {
     opcode = bus.read8Bit(PC++);
