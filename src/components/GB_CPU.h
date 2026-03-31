@@ -123,9 +123,9 @@ class GB_CPU
         /// decrement specified register
         void DEC(uint8_t& reg);
         // --> LOGICAL OPERATIONS
-        void XOR(uint8_t &reg);
-        void OR(uint8_t &reg);
-        void AND(uint8_t &reg);
+        void XOR(uint8_t value);
+        void OR(uint8_t value);
+        void AND(uint8_t value);
         // --> LOADS
         /// load from one register to another
         void LD(uint8_t& to, const uint8_t& from);

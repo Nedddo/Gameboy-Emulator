@@ -93,7 +93,7 @@ void GB_CPU::printRegisters() const
 void GB_CPU::ADD(const uint8_t n)
 {
     // Addition updates all flags, so we 0 the F register
-    F = 0x00;
+    clearFlags();
     // check for carry
     if (0xFF - n < A)
     {
@@ -209,6 +209,29 @@ void GB_CPU::DEC(uint8_t& reg)
         // enable zero flag
         setFlag(Z);
     }
+}
+
+void GB_CPU::XOR(uint8_t value)
+{
+    clearFlags();
+    A ^= value;
+    if (A == 0) setFlag(Z);
+}
+
+void GB_CPU::OR(uint8_t value)
+{
+    clearFlags();
+    A |= value;
+    if (A == 0) setFlag(Z);
+}
+
+void GB_CPU::AND(uint8_t value)
+{
+    clearFlags();
+    // for whatever reason AND sets half carry flag
+    setFlag(HC);
+    A &= value;
+    if (A == 0) setFlag(Z);
 }
 
 void GB_CPU::LD(uint8_t& to, const uint8_t& from)
@@ -600,6 +623,400 @@ unsigned int GB_CPU::decodeAndExecute()
         {
             LD(A, HL);
             return 0x08;
+        }
+        // ----- ARITHMETIC AND LOGICAL OPERATIONS -----
+        // --> ADD's
+        // ADD A, B
+        case 0x80:
+        {
+            ADD(B);
+            return 0x04;
+        }
+        // ADD A, C
+        case 0x81:
+        {
+            ADD(C);
+            return 0x04;
+        }
+        // ADD A, D
+        case 0x82:
+        {
+            ADD(D);
+            return 0x04;
+        }
+        // ADD A, E
+        case 0x83:
+        {
+            ADD(E);
+            return 0x04;
+        }
+        // ADD A, H
+        case 0x84:
+        {
+            ADD(H);
+            return 0x04;
+        }
+        // ADD A, L
+        case 0x85:
+        {
+            ADD(L);
+            return 0x04;
+        }
+        // ADD A, [HL]
+        case 0x86:
+        {
+            ADD(bus.read8Bit(HL));
+            return 0x08;
+        }
+        // ADD A, A
+        case 0x87:
+        {
+            ADD(A);
+            return 0x04;
+        }
+        // --> ADC's : Addition + Carry flag :]
+        // not worth making a whole new function out of so we make use of bool -> int implicit conversion
+        // ADC A, B
+        case 0x88:
+        {
+            ADD(B + isFlagSet(CY));
+            return 0x04;
+        }
+        // ADC A, C
+        case 0x89:
+        {
+            ADD(C + isFlagSet(CY));
+            return 0x04;
+        }
+        // ADC A, D
+        case 0x8A:
+        {
+            ADD(D + isFlagSet(CY));
+            return 0x04;
+        }
+        // ADC A, E
+        case 0x8B:
+        {
+            ADD(E + isFlagSet(CY));
+            return 0x04;
+        }
+        // ADC A, H
+        case 0x8C:
+        {
+            ADD(H + isFlagSet(CY));
+            return 0x04;
+        }
+        // ADC A, L
+        case 0x8D:
+        {
+            ADD(L + isFlagSet(CY));
+            return 0x04;
+        }
+        // ADC A, [HL]
+        case 0x8E:
+        {
+            ADD(bus.read8Bit(HL) + isFlagSet(CY));
+            return 0x08;
+        }
+        // ADC A, A
+        case 0x8F:
+        {
+            ADD(A + isFlagSet(CY));
+            return 0x04;
+        }
+        // --> SUB's
+        // SUB A, B
+        case 0x90:
+        {
+            SUB(B);
+            return 0x04;
+        }
+        // SUB A, C
+        case 0x91:
+        {
+            SUB(C);
+            return 0x04;
+        }
+        // SUB A, D
+        case 0x92:
+        {
+            SUB(D);
+            return 0x04;
+        }
+        // SUB A, E
+        case 0x93:
+        {
+            SUB(E);
+            return 0x04;
+        }
+        // SUB A, H
+        case 0x94:
+        {
+            SUB(H);
+            return 0x04;
+        }
+        // SUB A, L
+        case 0x95:
+        {
+            SUB(L);
+            return 0x04;
+        }
+        // SUB A, [HL]
+        case 0x96:
+        {
+            SUB(bus.read8Bit(HL));
+            return 0x08;
+        }
+        // SUB A, A
+        case 0x97:
+        {
+            SUB(A);
+            return 0x04;
+        }
+        // --> SBC's : Subtraction - Carry flag :]
+        // SBC A, B
+        case 0x98:
+        {
+            SUB(B + isFlagSet(CY));
+            return 0x04;
+        }
+        // SBC A, C
+        case 0x99:
+        {
+            SUB(C + isFlagSet(CY));
+            return 0x04;
+        }
+        // SBC A, D
+        case 0x9A:
+        {
+            SUB(D + isFlagSet(CY));
+            return 0x04;
+        }
+        // SBC A, E
+        case 0x9B:
+        {
+            SUB(E + isFlagSet(CY));
+            return 0x04;
+        }
+        // SBC A, H
+        case 0x9C:
+        {
+            SUB(H + isFlagSet(CY));
+            return 0x04;
+        }
+        // SBC A, L
+        case 0x9D:
+        {
+            SUB(L + isFlagSet(CY));
+            return 0x04;
+        }
+        // SBC A, [HL]
+        case 0x9E:
+        {
+            SUB(bus.read8Bit(HL) + isFlagSet(CY));
+            return 0x08;
+        }
+        // SBC A, A
+        case 0x9F:
+        {
+            SUB(A + isFlagSet(CY));
+            return 0x04;
+        }
+        // --> AND's
+        // AND A, B
+        case 0xA0:
+        {
+            AND(B);
+            return 0x04;
+        }
+        // AND A, C
+        case 0xA1:
+        {
+            AND(C);
+            return 0x04;
+        }
+        // AND A, D
+        case 0xA2:
+        {
+            AND(D);
+            return 0x04;
+        }
+        // AND A, E
+        case 0xA3:
+        {
+            AND(E);
+            return 0x04;
+        }
+        // AND A, H
+        case 0xA4:
+        {
+            AND(H);
+            return 0x04;
+        }
+        // AND A, L
+        case 0xA5:
+        {
+            AND(L);
+            return 0x04;
+        }
+        // AND A, [HL]
+        case 0xA6:
+        {
+            AND(bus.read8Bit(HL));
+            return 0x08;
+        }
+        // AND A, A
+        case 0xA7:
+        {
+            AND(A);
+            return 0x04;
+        }
+        // --> XOR's
+        // XOR A, B
+        case 0xA8:
+        {
+            XOR(B);
+            return 0x04;
+        }
+        // XOR A, C
+        case 0xA9:
+        {
+            XOR(C);
+            return 0x04;
+        }
+        // XOR A, D
+        case 0xAA:
+        {
+            XOR(D);
+            return 0x04;
+        }
+        // XOR A, E
+        case 0xAB:
+        {
+            XOR(E);
+            return 0x04;
+        }
+        // XOR A, H
+        case 0xAC:
+        {
+            XOR(H);
+            return 0x04;
+        }
+        // XOR A, L
+        case 0xAD:
+        {
+            XOR(L);
+            return 0x04;
+        }
+        // XOR A, [HL]
+        case 0xAE:
+        {
+            XOR(bus.read8Bit(HL));
+            return 0x08;
+        }
+        // XOR A, A
+        case 0xAF:
+        {
+            XOR(A);
+            return 0x04;
+        }
+        // --> OR's
+        // OR A, B
+        case 0xB0:
+        {
+            OR(B);
+            return 0x04;
+        }
+        // OR A, C
+        case 0xB1:
+        {
+            OR(C);
+            return 0x04;
+        }
+        // OR A, D
+        case 0xB2:
+        {
+            OR(D);
+            return 0x04;
+        }
+        // OR A, E
+        case 0xB3:
+        {
+            OR(E);
+            return 0x04;
+        }
+        // OR A, H
+        case 0xB4:
+        {
+            OR(H);
+            return 0x04;
+        }
+        // OR A, L
+        case 0xB5:
+        {
+            OR(L);
+            return 0x04;
+        }
+        // OR A, [HL]
+        case 0xB6:
+        {
+            OR(bus.read8Bit(HL));
+            return 0x08;
+        }
+        // OR A, A
+        case 0xB7:
+        {
+            OR(A);
+            return 0x04;
+        }
+        // --> CP's
+        // CP A, B
+        case 0xB8:
+        {
+            CP(B);
+            return 0x04;
+        }
+        // CP A, C
+        case 0xB9:
+        {
+            CP(C);
+            return 0x04;
+        }
+        // CP A, D
+        case 0xBA:
+        {
+            CP(D);
+            return 0x04;
+        }
+        // CP A, E
+        case 0xBB:
+        {
+            CP(E);
+            return 0x04;
+        }
+        // CP A, H
+        case 0xBC:
+        {
+            CP(H);
+            return 0x04;
+        }
+        // CP A, L
+        case 0xBD:
+        {
+            CP(L);
+            return 0x04;
+        }
+        // CP A, [HL]
+        case 0xBE:
+        {
+            CP(bus.read8Bit(HL));
+            return 0x08;
+        }
+        // CP A, A
+        case 0xBF:
+        {
+            CP(A);
+            return 0x04;
         }
         // ----- JUMP INSTRUCTIONS -----
         // (we'll include CALLS and RST's here too)
