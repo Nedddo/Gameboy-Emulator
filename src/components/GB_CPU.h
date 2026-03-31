@@ -80,22 +80,14 @@ class GB_CPU
         // set if last operation had a carry
         CY = 0x10
         };
-        // these are some memory address constants for RST and interrupts
+        // --> these are some memory address constants for RST and interrupts
         static constexpr uint16_t
         // --> RST memory addresses
-        RST0 = 0x00,
-        RST1 = 0x08,
-        RST2 = 0x10,
-        RST3 = 0x18,
-        RST4 = 0x20,
-        RST5 = 0x28,
-        RST6 = 0x30,
-        RST7 = 0x38,
+        RST0 = 0x00, RST1 = 0x08, RST2 = 0x10, RST3 = 0x18,
+        RST4 = 0x20, RST5 = 0x28, RST6 = 0x30, RST7 = 0x38,
         // --> Interrupt vectors
-        VBLANK = 0x40,
-        STAT   = 0x48,
-        TIMER  = 0x50,
-        SERIAL = 0x58,
+        VBLANK = 0x40, STAT   = 0x48,
+        TIMER  = 0x50, SERIAL = 0x58,
         JOYPAD = 0x60;
         // ---------- METHODS ------------
         // --> Flag methods, unnecessary ig, just cleaner (and clearer!) than bitwise operations
@@ -119,15 +111,27 @@ class GB_CPU
         // --------- GENERIC CPU INSTRUCTIONS ------------
         // most instructions in the Game Boy aren't unique, many do the same thing just with different operands
         // for example, there's something like >90 LD instructions - which are more or less the same
+        // --> ARITHMETIC OPERATIONS
+        /// adds specified regisater to A
         void ADD(uint8_t n);
+        /// subtracts specified register from A
         void SUB(uint8_t n);
+        /// essentially a subtraction where the result isn't stored, only updates flags
         void CP(uint8_t n);
+        /// increment specified register
         void INC(uint8_t &reg);
+        /// decrement specified register
         void DEC(uint8_t& reg);
+        // --> LOGICAL OPERATIONS
+        void XOR(uint8_t &reg);
+        void OR(uint8_t &reg);
+        void AND(uint8_t &reg);
+        // --> LOADS
         /// load from one register to another
         void LD(uint8_t& to, const uint8_t& from);
         /// load an immediate to a register
         void LDImmediate(uint8_t& reg);
+        /// load an immediate 16 bit number to a register pair
         void LDImmediate(uint16_t& reg);
         // load from/to memory to/from a register
         void LD(uint8_t& reg, uint16_t address);
