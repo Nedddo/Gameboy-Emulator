@@ -581,7 +581,7 @@ unsigned int GB_CPU::decodeAndExecute()
             LD(A, A);
             return 0x04;
         }
-        // Loads from pointer to register (e.g. LD A, [HL] -> A = Value stored at HL)
+        // --> Loads from pointer to register (e.g. LD A, [HL] -> A = Value stored at HL)
         // LD B, [HL]
         case 0x46:
         {
@@ -624,7 +624,199 @@ unsigned int GB_CPU::decodeAndExecute()
             LD(A, HL);
             return 0x08;
         }
+        // --> Loads to registers from immediate values
+        // LD A, u8
+        case 0x3E:
+        {
+            LDImmediate(A);
+            return 0x08;
+        }
+        // LD B, u8
+        case 0x06:
+        {
+            LDImmediate(B);
+            return 0x08;
+        }
+        // LD C, u8
+        case 0x0E:
+        {
+            LDImmediate(C);
+            return 0x08;
+        }
+        // LD D, u8
+        case 0x16:
+        {
+            LDImmediate(D);
+            return 0x08;
+        }
+        // LD E, u8
+        case 0x1E:
+        {
+            LDImmediate(E);
+            return 0x08;
+        }
+        // LD H, u8
+        case 0x26:
+        {
+            LDImmediate(H);
+            return 0x08;
+        }
+        // LD L, u8
+        case 0x2E:
+        {
+            LDImmediate(L);
+            return 0x08;
+        }
+        // --> Loads to 16 bit register pairs from immediate values
+        // LD BC, u16
+        case 0x01:
+        {
+            LDImmediate(BC);
+            return 0x0C;
+        }
+        // LD DE, u16
+        case 0x11:
+        {
+            LDImmediate(DE);
+            return 0x0C;
+        }
+        // LD HL, u16
+        case 0x21:
+        {
+            LDImmediate(HL);
+            return 0x0C;
+        }
+        // LD SP, u16
+        case 0x31:
+        {
+            LDImmediate(SP);
+            return 0x0C;
+        }
+        // --> Loads to memory from register A
+        // LD [BC], A
+        case 0x02:
+        {
+            LD(BC, A);
+            return 0x08;
+        }
+        // LD [DE], A
+        case 0x12:
+        {
+            LD(DE, A);
+            return 0x08;
+        }
+        // LD [HL++], A
+        case 0x22:
+        {
+            LD(HL++, A);
+            return 0x08;
+        }
+        // LD [HL--}, A
+        case 0x32:
+        {
+            LD(HL--, A);
+            return 0x08;
+        }
         // ----- ARITHMETIC AND LOGICAL OPERATIONS -----
+        // --> INC's
+        // INC A
+        case 0x3C:
+        {
+            INC(A);
+            return 0x04;
+        }
+        // INC B
+        case 0x04:
+        {
+            INC(B);
+            return 0x04;
+        }
+        // INC C
+        case 0x0C:
+        {
+            INC(C);
+            return 0x04;
+        }
+        // INC D
+        case 0x14:
+        {
+            INC(D);
+            return 0x04;
+        }
+        // INC E
+        case 0x1C:
+        {
+            INC(E);
+            return 0x04;
+        }
+        // INC H
+        case 0x24:
+        {
+            INC(H);
+            return 0x04;
+        }
+        // INC L
+        case 0x2C:
+        {
+            INC(L);
+            return 0x04;
+        }
+        // INC [HL]
+        case 0x34:
+        {
+            // This opcode is too specific and one off to really bother making a generic function for it
+            bus.write8Bit(HL, bus.read8Bit(HL) + 1);
+            return 0x0C;
+        }
+        // --> DEC's
+        // DEC A
+        case 0x3D:
+        {
+            DEC(A);
+            return 0x04;
+        }
+        // DEC B
+        case 0x05:
+        {
+            DEC(B);
+            return 0x04;
+        }
+        // DEC C
+        case 0x0D:
+        {
+            DEC(C);
+            return 0x04;
+        }
+        // DEC D
+        case 0x15:
+        {
+            DEC(D);
+            return 0x04;
+        }
+        // DEC E
+        case 0x1D:
+        {
+            DEC(E);
+            return 0x04;
+        }
+        // DEC H
+        case 0x25:
+        {
+            DEC(H);
+            return 0x04;
+        }
+        // DEC L
+        case 0x2D:
+        {
+            DEC(L);
+        }
+        // DEC [HL]
+        case 0x35:
+        {
+            // again, too specific to make a specialized function for
+            bus.write8Bit(HL, bus.read8Bit(HL) - 1);
+            return 0x0C;
+        }
         // --> ADD's
         // ADD A, B
         case 0x80:
