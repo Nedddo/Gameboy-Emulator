@@ -13,5 +13,4 @@ add_executable(Gameboy2 src/main.cpp
         src/components/GB_PPU.cpp
         src/components/GB_PPU.h
         src/helpers/Utils.cpp
-        src/helpers/CircleBuffer.cpp
         src/helpers/CircleBuffer.h)

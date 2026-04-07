@@ -9,8 +9,9 @@ int main()
     // ill implement actual file input + commandline args, but for rn, this is fine
     std::string macPath = "/Users/neddo/Downloads/Tetris (World) (Rev 1)/Tetris (World) (Rev 1).gb";
     std::string windowsPath = "C:/Users/Ned/Downloads/Tetris (World) (Rev 1)/Tetris (World) (Rev 1).gb";
-    GB_MemoryBus::loadRom(macPath);
+    GB_MemoryBus::loadRom(windowsPath);
     Emulator emulator;
+    emulator.debugEnable();
     for (;;)
     {
         emulator.step();
