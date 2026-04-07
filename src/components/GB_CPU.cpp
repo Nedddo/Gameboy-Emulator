@@ -27,7 +27,7 @@ void GB_CPU::handleInterrupts()
     // The IF register -> what interrupts are being requested
     const uint8_t IF = bus.read8Bit(0xFF0F);
     // of the requested interrupts, which are enabled
-    uint8_t handle = IE & IF;
+    const uint8_t handle = IE & IF;
     if (handle)
     {
         // DISABLE IME, this needs to be done in a specific way. Ignoring for now
@@ -83,7 +83,7 @@ void GB_CPU::printRegisters() const
     std::cout << "\nAF:    0x" << std::hex << std::setw(4) << std::setfill('0') << AF;
     std::cout << "\nBC:    0x" << std::setw(4) << std::setfill('0') << BC;
     std::cout << "\nDE:    0x" << std::setw(4) << std::setfill('0') << DE;
-    std::cout << "\nHL:    0x" << std::setw(4) << std::setfill('0') << DE;
+    std::cout << "\nHL:    0x" << std::setw(4) << std::setfill('0') << HL;
 
     std::cout << "\n\nPC:    0x" << std::setw(4) << std::setfill('0') << PC;
     std::cout << "\nSP:    0x" << std::setw(4) << std::setfill('0') << SP;
@@ -1262,10 +1262,65 @@ unsigned int GB_CPU::decodeAndExecute()
             }
             return 0x0C;
         }
+        // --> Jump relatives
+        // JR, s8
+        case 0x18:
+        {
+            JR();
+            return 0x0C;
+        }
+        // JR NZ, s8
+        case 0x20:
+        {
+            // Jumps if Z flag isn't set (is this comment really necessary?)
+            if (!isFlagSet(Z))
+            {
+                JR();
+                return 0x0C;
+            }
+            return 0x08;
+        }
+        // JR NC, s8
+        case 0x30:
+        {
+            // Jumps if CY flag isn't set
+            if (!isFlagSet(CY))
+            {
+                JR();
+                return 0x0C;
+            }
+            return 0x08;
+        }
+        // JR Z, s8
+        case 0x28:
+        {
+            // Jumps if Z flag IS set
+            if (isFlagSet(Z))
+            {
+                JR();
+                return 0x0C;
+            }
+            return 0x08;
+        }
+        // JR C, s8
+        case 0x38:
+        {
+            // Jumps if Z flag IS set
+            if (isFlagSet(CY))
+            {
+                JR();
+                return 0x0C;
+            }
+            return 0x08;
+        }
 
         default:
         {
-            std::cout << "\x1b[1;31mUnknown opcode: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<unsigned>(opcode) << "\x1b[1;0m" << std::endl;
+            std::cout << "\x1b[1;31mUnknown opcode: " << std::setw(2) << std::setfill('0')<< std::hex <<
+                            static_cast<unsigned>(opcode) << "\x1b[1;0m" << std::endl;
+            // PC gets incremented everytime BEFORE the instruction gets executed, to acutually reflect what line
+            // the program stopped on, we decrement PC
+            PC--;
             printRegisters();
             std::terminate();
         }

@@ -149,6 +149,8 @@ class GB_CPU
         unsigned int step();
         /// handy print functions for debugging
         void printRegisters() const;
+        /// returns PC value
+        uint16_t getPC() const { return PC; }
 
 };
 
