@@ -1227,6 +1227,7 @@ unsigned int GB_CPU::decodeAndExecute()
                 JP();
                 return 0x10;
             }
+            PC += 2;
             return 0x0C;
         }
         // JP NC, u16
@@ -1238,6 +1239,7 @@ unsigned int GB_CPU::decodeAndExecute()
                 JP();
                 return 0x10;
             }
+            PC += 2;
             return 0x0C;
         }
         // JP Z, u16
@@ -1249,6 +1251,7 @@ unsigned int GB_CPU::decodeAndExecute()
                 JP();
                 return 0x10;
             }
+            PC += 2;
             return 0x0C;
         }
         // JP C, u16
@@ -1260,6 +1263,7 @@ unsigned int GB_CPU::decodeAndExecute()
                 JP();
                 return 0x10;
             }
+            PC += 2;
             return 0x0C;
         }
         // --> Jump relatives
@@ -1278,6 +1282,7 @@ unsigned int GB_CPU::decodeAndExecute()
                 JR();
                 return 0x0C;
             }
+            PC++;
             return 0x08;
         }
         // JR NC, s8
@@ -1289,6 +1294,7 @@ unsigned int GB_CPU::decodeAndExecute()
                 JR();
                 return 0x0C;
             }
+            PC++;
             return 0x08;
         }
         // JR Z, s8
@@ -1300,6 +1306,7 @@ unsigned int GB_CPU::decodeAndExecute()
                 JR();
                 return 0x0C;
             }
+            PC++;
             return 0x08;
         }
         // JR C, s8
@@ -1311,6 +1318,7 @@ unsigned int GB_CPU::decodeAndExecute()
                 JR();
                 return 0x0C;
             }
+            PC++;
             return 0x08;
         }
 
