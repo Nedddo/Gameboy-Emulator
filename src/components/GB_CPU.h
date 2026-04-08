@@ -92,7 +92,7 @@ class GB_CPU
         // ---------- METHODS ------------
         // --> Flag methods, unnecessary ig, just cleaner (and clearer!) than bitwise operations
         // returns true if flag is set
-        bool isFlagSet(const decltype(Z) flag) const { return (F & flag) == F; }
+        bool isFlagSet(const decltype(Z) flag) const { return (F & flag) == flag; }
         // sets given flag to 1
         void setFlag(const decltype(Z) flag) { F |= flag; }
         // sets specified flag to off
