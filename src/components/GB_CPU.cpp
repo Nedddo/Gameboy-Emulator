@@ -686,6 +686,12 @@ unsigned int GB_CPU::decodeAndExecute()
             LDImmediate(L);
             return 0x08;
         }
+        // LD [HL], u8
+        case 0x36:
+        {
+            LD(HL, bus.read8Bit(PC++));
+            return 0x0C;
+        }
         // --> Loads to 16 bit register pairs from immediate values
         // LD BC, u16
         case 0x01:
@@ -712,6 +718,13 @@ unsigned int GB_CPU::decodeAndExecute()
             return 0x0C;
         }
         // --> Loads to memory from register A
+        // LD [u16], A
+        case 0xEA:
+        {
+            LD(bus.read16Bit(PC), A);
+            PC += 2;
+            return 0x10;
+        }
         // LD [BC], A
         case 0x02:
         {
@@ -734,6 +747,31 @@ unsigned int GB_CPU::decodeAndExecute()
         case 0x32:
         {
             LD(HL--, A);
+            return 0x08;
+        }
+        // --> loads to register A from memory
+        // LD A, [BC]
+        case 0x0A:
+        {
+            LD(A, BC);
+            return 0x08;
+        }
+        // LD A, [DE]
+        case 0x1A:
+        {
+            LD(A, DE);
+            return 0x08;
+        }
+        // LD A, [HL++]
+        case 0x2A:
+        {
+            LD(A, HL++);
+            return 0x08;
+        }
+        // LD A, [HL--]
+        case 0x3A:
+        {
+            LD(A, HL--);
             return 0x08;
         }
         // --> loads to and from [0xFF00 + u8]
@@ -849,6 +887,31 @@ unsigned int GB_CPU::decodeAndExecute()
             // again, too specific to make a specialized function for
             bus.write8Bit(HL, bus.read8Bit(HL) - 1);
             return 0x0C;
+        }
+        // --> DEC 16 bit REGISTER
+        // DEC BC - note: 16 bit decrements dont modify flags at all
+        case 0x0B:
+        {
+            BC--;
+            return 0x08;
+        }
+        // DEC DE
+        case 0x1B:
+        {
+            DE--;
+            return 0x08;
+        }
+        // DEC HL
+        case 0x2B:
+        {
+            HL--;
+            return 0x08;
+        }
+        // DEC SP
+        case 0x3B:
+        {
+            SP--;
+            return 0x08;
         }
         // --> ADD's
         // ADD A, B
@@ -1355,7 +1418,13 @@ unsigned int GB_CPU::decodeAndExecute()
             return 0x08;
         }
         // --> CALL's store PC on stack and jump to a subroutine
-
+        // CALL u16
+        case 0xCD:
+        {
+            CALL(bus.read16Bit(PC));
+            PC += 2;
+            return 0x18;
+        }
         // --> RST's - these are basically CALLS to constant addresses, cutting down on cycles significantly
         // RST 0
         case 0xC7:
