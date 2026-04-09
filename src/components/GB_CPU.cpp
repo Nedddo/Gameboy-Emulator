@@ -717,6 +717,24 @@ unsigned int GB_CPU::decodeAndExecute()
             LD(HL--, A);
             return 0x08;
         }
+        // --> loads to and from [0xFF00 + u8]
+        // LD [0xFF00 + u8], A
+        case 0xE0:
+        {
+            const uint16_t addr = 0xFF00 + bus.read8Bit(PC++);
+            LD(addr, A);
+            // immediate is really a 16 bit operand but the higher order bits are all set to 0
+            // dunno why it's like this, but im not a fan!
+            PC++;
+            return 0x0C;
+        }
+        case 0xF0:
+        {
+            const uint16_t addr = 0xFF00 + bus.read8Bit(PC++);
+            LD(A, addr);
+            PC++;
+            return 0x0C;
+        }
         // ----- ARITHMETIC AND LOGICAL OPERATIONS -----
         // --> INC's
         // INC A
@@ -1320,6 +1338,20 @@ unsigned int GB_CPU::decodeAndExecute()
             }
             PC++;
             return 0x08;
+        }
+        // ------ INTERRUPT OPS ------
+        // DI
+        case 0xF3:
+        {
+            IME = false;
+            return 0x04;
+        }
+        // EI -> delayed by one instruction, gotta think abt how to do that
+        case 0xFB:
+        {
+            // good enough for now
+            IME = true;
+            return 0x04;
         }
 
         default:
