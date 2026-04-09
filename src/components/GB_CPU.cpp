@@ -742,16 +742,12 @@ unsigned int GB_CPU::decodeAndExecute()
         {
             const uint16_t addr = 0xFF00 + bus.read8Bit(PC++);
             LD(addr, A);
-            // immediate is really a 16 bit operand but the higher order bits are all set to 0
-            // dunno why it's like this, but im not a fan!
-            PC++;
             return 0x0C;
         }
         case 0xF0:
         {
             const uint16_t addr = 0xFF00 + bus.read8Bit(PC++);
             LD(A, addr);
-            PC++;
             return 0x0C;
         }
         // ----- ARITHMETIC AND LOGICAL OPERATIONS -----
