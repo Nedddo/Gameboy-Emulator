@@ -1358,12 +1358,58 @@ unsigned int GB_CPU::decodeAndExecute()
             PC++;
             return 0x08;
         }
-        // --> RST's
+        // --> CALL's store PC on stack and jump to a subroutine
+
+        // --> RST's - these are basically CALLS to constant addresses, cutting down on cycles significantly
         // RST 0
         case 0xC7:
         {
-
+            CALL(RST0);
+            return 0x04;
         }
+        // RST 1
+        case 0xCF:
+        {
+            CALL(RST1);
+            return 0x04;
+        }
+        // RST 2
+        case 0xD7:
+        {
+            CALL(RST2);
+            return 0x04;
+        }
+        // RST 3
+        case 0xDF:
+        {
+            CALL(RST3);
+            return 0x04;
+        }
+        // RST 4
+        case 0xE7:
+        {
+            CALL(RST4);
+            return 0x04;
+        }
+        // RST 5
+        case 0xEF:
+        {
+            CALL(RST5);
+            return 0x04;
+        }
+        // RST 6
+        case 0xF7:
+        {
+            CALL(RST6);
+            return 0x04;
+        }
+        // RST 7
+        case 0xFF:
+        {
+            CALL(RST7);
+            return 0x04;
+        }
+
         // ------ INTERRUPT OPS ------
         // DI
         case 0xF3:
