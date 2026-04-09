@@ -141,6 +141,13 @@ class GB_CPU
         void JP();
         /// Jump relative, adds an immediate signed 8 bit value to PC
         void JR();
+        /// stores PC on the stack, jumps to specified address
+        void CALL(uint16_t address);
+        // --> Stack instructions
+        /// Pushes to the stack (decrements SP by 2)
+        void PUSH(uint16_t val);
+        /// read from stack pointer to register,
+        void POP(uint16_t& reg);
     public:
         /** set initial register values to their post boot rom values, the reason this isnt in the constructor is
         that in future, I may want to emulate the actual boot rom */

@@ -272,6 +272,25 @@ void GB_CPU::JR()
     PC += static_cast<int8_t>(bus.read8Bit(PC));
 }
 
+void GB_CPU::CALL(uint16_t address)
+{
+    PUSH(PC);
+    PC = address;
+}
+
+// --- Stack instructions ---
+void GB_CPU::PUSH(const uint16_t val)
+{
+    SP -= 2;
+    bus.write16Bit(SP, val);
+}
+
+void GB_CPU::POP(uint16_t &reg)
+{
+    reg = bus.read16Bit(SP);
+    SP += 2;
+}
+
 unsigned int GB_CPU::decodeAndExecute()
 {
     // big ol' fuck off switch statement, putting at bottom of file for cleanliness, outta sight, outta mind
@@ -1338,6 +1357,12 @@ unsigned int GB_CPU::decodeAndExecute()
             }
             PC++;
             return 0x08;
+        }
+        // --> RST's
+        // RST 0
+        case 0xC7:
+        {
+
         }
         // ------ INTERRUPT OPS ------
         // DI
