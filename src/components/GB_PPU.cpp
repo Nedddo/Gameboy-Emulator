@@ -18,7 +18,7 @@ constexpr uint8_t GB_Y = 144;
 // number of vertical scanlines
 constexpr uint8_t TOTAL_SCANLINES = 154;
 
-void GB_PPU::step(const int ticks)
+void GB_PPU::step(const unsigned int ticks)
 {
 for (int i = 0; i < ticks; i++)
     {
