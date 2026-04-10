@@ -86,7 +86,7 @@ void GB_CPU::printRegisters() const
     std::cout << "\nHL:    0x" << std::setw(4) << std::setfill('0') << HL;
 
     std::cout << "\n\nPC:    0x" << std::setw(4) << std::setfill('0') << PC;
-    std::cout << "\nSP:    0x" << std::setw(4) << std::setfill('0') << SP;
+    std::cout << "\nSP:    0x" << std::setw(4) << std::setfill('0') << SP << "\n";
 }
 
 // ---- CPU INSTRUCTIONS ----
@@ -254,7 +254,6 @@ void GB_CPU::LDImmediate(uint16_t& reg)
 void GB_CPU::LD(uint8_t &reg, uint16_t address)
 {
     reg = bus.read8Bit(address);
-    PC += 2;
 }
 void GB_CPU::LD(const uint16_t& address, const uint8_t& reg)
 {
@@ -269,7 +268,7 @@ void GB_CPU::JP()
 void GB_CPU::JR()
 {
     // JR uses a signed immediate (lets us go backwards!!!)
-    PC += static_cast<int8_t>(bus.read8Bit(PC));
+    PC += static_cast<int8_t>(bus.read8Bit(PC++));
 }
 
 void GB_CPU::CALL(uint16_t address)
