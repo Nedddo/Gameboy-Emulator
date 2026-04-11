@@ -19,19 +19,20 @@ void Emulator::step()
 {
     if (debug) handleDebugMode();
     unsigned int cycles = cpu.step();
-    // TO DO ppu.step(cycles)
+    ppu.step(cycles);
     // MAYBE apu.step(cycles) (sound, dunno if thats in the projects scope)
 }
 
 // debug mode logic, formatting and static vars make it HUGE, its not that complex, but keeping it at the bottom, out of
 // the way to look nice
+// i have to break this shit up into helper mane - later!
 void Emulator::handleDebugMode()
 {
     // Formatting and functionality based HEAVILY on sameboys debugger
     // ----- STATIC VARIABLES USED IN THE FUNCTION -----
     static const std::set<std::string> validCommands =
     {
-        "help", "step", "cont", "continue", "breakpoint", "bp", "delete"
+        "help", "step", "cont", "continue", "breakpoint", "bp", "delete", "reg"
     };
     // stores the last 5 PC values and their operations last pair is the NEXT one to be executed (not executed yet)
     static CircleBuffer<std::pair<uint16_t, uint8_t>> opBuffer(5);
@@ -75,11 +76,12 @@ void Emulator::handleDebugMode()
         {
             // ugly ansi code is bold and italics!!
             std::cout
-            << "<----- Commands ----->\n"
-            << "\x1B[1;3mstep\x1B[0m           ->   steps the program forward by one instruction"
-            << "\x1B[1;3mcontinue\x1B[0m       ->   steps the program forward until a breakpoint is reached"
-            << "\x1B[1;3mbreakpoint <x>\x1B[0m ->   sets a breakpoint at memory address <x>"
-            << "\x1B[1;3mdelete <x>\x1B[0m     ->   deletes (if present) the breakpoint at memory address <x>";
+            <<          "<------------------------| Commands |------------------------>\n"
+            << "\x1B[1;3mstep\x1B[0m           ->   steps the program forward by one instruction\n"
+            << "\x1B[1;3mcontinue\x1B[0m       ->   steps the program forward until a breakpoint is reached\n"
+            << "\x1B[1;3mbreakpoint <x>\x1B[0m ->   sets a breakpoint at memory address <x>\n"
+            << "\x1B[1;3mdelete <x>\x1B[0m     ->   deletes (if present) the breakpoint at memory address <x>\n"
+            << "\x1B[1;3mreg <x>\x1B[0m        ->   print the values stored in the CPU registers\n";
             // get a new command
             std::cin >> debugCommand;
         }
@@ -88,7 +90,7 @@ void Emulator::handleDebugMode()
             // print opcode buffer
             prnBuffer();
         }
-        else if (debugCommand == "breakpoint")
+        else if (debugCommand == "breakpoint" || debugCommand == "bp")
         {
             uint16_t address;
             std::cin >> std::hex >> address;
@@ -100,5 +102,12 @@ void Emulator::handleDebugMode()
             std::cin >> std::hex >> address;
             breakpoints.erase(address);
         }
+        else if (debugCommand == "reg")
+        {
+            cpu.printRegisters();
+            std::cin >> debugCommand;
+        }
     }
 }
+
+// helper functions for debugging

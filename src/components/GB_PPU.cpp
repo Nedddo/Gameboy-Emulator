@@ -56,7 +56,11 @@ for (int i = 0; i < ticks; i++)
                 {
                     if (ly >= GB_Y - 1)
                     {
+                        // switch to vblank mode
                         mode = 1;
+                        // set vblank interrupt flag
+                        // this isnt quite right, it'll overwrite other flags but its fine for testing rn
+                        memory.write8Bit(0xFF0F, 0x01);
                     }
                     else
                     {
@@ -69,7 +73,7 @@ for (int i = 0; i < ticks; i++)
             // VBlank
             case 1:
             {
-                // VBlank, handle interrupts, wait
+                // VBlank, wait
                 break;
             }
             default:

@@ -34,31 +34,33 @@ void GB_CPU::handleInterrupts()
         if (handle & 0x01)
         {
             // checks if bit 0 is set, this corresponds to VBLANK (highest priority)
-            PC = VBLANK;
+            CALL(VBLANK);
+            // turn flag off
+            bus.write8Bit(0xFF0F, 0x00);
             return;
         }
         if (handle & 0x02)
         {
             // checks if bit 1 is set, this corresponds to STAT
-            PC = STAT;
+            CALL(STAT);
             return;
         }
         if (handle & 0x04)
         {
             // checks if bit 2 is set, this corresponds to TIMER
-            PC = TIMER;
+            CALL(TIMER);
             return;
         }
         if (handle & 0x08)
         {
             // checks if bit 3 is set, this corresponds to SERIAL
-            PC = SERIAL;
+            CALL(SERIAL);
             return;
         }
         if (handle & 0x10)
         {
             // checks if bit 2 is set, this corresponds to JOYPAD (lowest priority)
-            PC = JOYPAD;
+            CALL(JOYPAD);
             return;
         }
     }
