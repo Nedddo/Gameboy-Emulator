@@ -1485,8 +1485,17 @@ unsigned int GB_CPU::decodeAndExecute()
         // CALL u16
         case 0xCD:
         {
-            CALL(bus.read16Bit(PC));
+            auto address = bus.read16Bit(PC);
+            PC += 2;
+            CALL(address);
             return 0x18;
+        }
+        // --> RETURNS (RET and RETI)
+        // RET
+        case 0xC9:
+        {
+            POP(PC);
+            return 0x10;
         }
         // --> RST's - these are basically CALLS to constant addresses, cutting down on cycles significantly
         // RST 0
