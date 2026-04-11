@@ -773,7 +773,8 @@ unsigned int GB_CPU::decodeAndExecute()
             LD(A, HL--);
             return 0x08;
         }
-        // --> loads to and from [0xFF00 + u8]
+        // ---- LDH loads ----
+        // Load high, a type of load used to access the last 256 bytes of memory
         // LD [0xFF00 + u8], A
         case 0xE0:
         {
@@ -781,12 +782,28 @@ unsigned int GB_CPU::decodeAndExecute()
             LD(addr, A);
             return 0x0C;
         }
+        //LD [0xFF00 + u8], A
         case 0xF0:
         {
             const uint16_t addr = 0xFF00 + bus.read8Bit(PC++);
             LD(A, addr);
             return 0x0C;
         }
+        // LD [0xFF00 + C], A
+        case 0xE2:
+        {
+            const uint16_t addr = 0xFF00 + C;
+            LD(addr, A);
+            return 0x0C;
+        }
+        //LD A, [0xFF00 + C]
+        case 0xF2:
+        {
+            const uint16_t addr = 0xFF00 + C;
+            LD(A, addr);
+            return 0x0C;
+        }
+
         // ----- ARITHMETIC AND LOGICAL OPERATIONS -----
         // --> INC's
         // INC A
@@ -961,6 +978,12 @@ unsigned int GB_CPU::decodeAndExecute()
             ADD(A);
             return 0x04;
         }
+        // ADD A, u8
+        case 0xC6:
+        {
+            ADD(bus.read8Bit(PC++));
+            return 0x08;
+        }
         // --> ADC's : Addition + Carry flag :]
         // not worth making a whole new function out of so we make use of bool -> int implicit conversion
         // ADC A, B
@@ -1011,6 +1034,12 @@ unsigned int GB_CPU::decodeAndExecute()
             ADD(A + isFlagSet(CY));
             return 0x04;
         }
+        // ADC A, u8
+        case 0xCE:
+        {
+            ADD(bus.read8Bit(PC++) + isFlagSet(CY));
+            return 0x08;
+        }
         // --> SUB's
         // SUB A, B
         case 0x90:
@@ -1059,6 +1088,12 @@ unsigned int GB_CPU::decodeAndExecute()
         {
             SUB(A);
             return 0x04;
+        }
+        // SUB A, u8
+        case 0xD6:
+        {
+            SUB(bus.read8Bit(PC++));
+            return 0x08;
         }
         // --> SBC's : Subtraction - Carry flag :]
         // SBC A, B
@@ -1109,6 +1144,12 @@ unsigned int GB_CPU::decodeAndExecute()
             SUB(A + isFlagSet(CY));
             return 0x04;
         }
+        // SBC A, u8
+        case 0xDE:
+        {
+            SUB(bus.read8Bit(PC++) + isFlagSet(CY));
+            return 0x08;
+        }
         // --> AND's
         // AND A, B
         case 0xA0:
@@ -1157,6 +1198,12 @@ unsigned int GB_CPU::decodeAndExecute()
         {
             AND(A);
             return 0x04;
+        }
+        // AND A, u8
+        case 0xE6:
+        {
+            AND(bus.read8Bit(PC++));
+            return 0x08;
         }
         // --> XOR's
         // XOR A, B
@@ -1207,6 +1254,12 @@ unsigned int GB_CPU::decodeAndExecute()
             XOR(A);
             return 0x04;
         }
+        // XOR A, u8
+        case 0xEE:
+        {
+            XOR(bus.read8Bit(PC++));
+            return 0x08;
+        }
         // --> OR's
         // OR A, B
         case 0xB0:
@@ -1256,6 +1309,12 @@ unsigned int GB_CPU::decodeAndExecute()
             OR(A);
             return 0x04;
         }
+        // OR A, u8
+        case 0xF6:
+        {
+            OR(bus.read8Bit(PC++));
+            return 0x08;
+        }
         // --> CP's
         // CP A, B
         case 0xB8:
@@ -1304,6 +1363,12 @@ unsigned int GB_CPU::decodeAndExecute()
         {
             CP(A);
             return 0x04;
+        }
+        // CP A, u8
+        case 0xFE:
+        {
+            CP(bus.read8Bit(PC++));
+            return 0x08;
         }
         // ----- JUMP INSTRUCTIONS -----
         // (we'll include CALLS and RST's here too)
@@ -1421,7 +1486,6 @@ unsigned int GB_CPU::decodeAndExecute()
         case 0xCD:
         {
             CALL(bus.read16Bit(PC));
-            PC += 2;
             return 0x18;
         }
         // --> RST's - these are basically CALLS to constant addresses, cutting down on cycles significantly
