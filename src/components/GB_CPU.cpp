@@ -1548,8 +1548,56 @@ unsigned int GB_CPU::decodeAndExecute()
             CALL(RST7);
             return 0x04;
         }
-
-        // ------ INTERRUPT OPS ------
+        // --------< STACK INSTRUCTIONS >--------
+        // PUSH AF
+        case 0xF5:
+        {
+            PUSH(AF);
+            return 0x10;
+        }
+        // PUSH BC
+        case 0xC5:
+        {
+            PUSH(BC);
+            return 0x10;
+        }
+        // PUSH DE
+        case 0xD5:
+        {
+            PUSH(DE);
+            return 0x10;
+        }
+        // PUSH HL
+        case 0xE5:
+        {
+            PUSH(HL);
+            return 0x10;
+        }
+        // POP AF
+        case 0xF1:
+        {
+            POP(AF);
+            return 0x0C;
+        }
+        // POP BC
+        case 0xC1:
+        {
+            POP(BC);
+            return 0x0C;
+        }
+        // POP DE
+        case 0xD1:
+        {
+            POP(DE);
+            return 0x0C;
+        }
+        // POP HL
+        case 0xE1:
+        {
+            POP(HL);
+            return 0x0C;
+        }
+        // --------< INTERRUPT OPS >--------
         // DI
         case 0xF3:
         {
