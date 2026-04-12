@@ -118,6 +118,25 @@ void GB_CPU::ADD(const uint8_t n)
     A += n;
 }
 
+void GB_CPU::ADD16(uint16_t n)
+{
+    // 16 bit addition does not update Z flag
+    keepFlag(Z);
+    // check for carry
+    if (0xFFFF - n < A)
+    {
+        // set carry flag
+        setFlag(CY);
+    }
+    // check for half carry
+    if ((A & 0xFF) + (n & 0xFF) > 0xFF)
+    {
+        // enable half carry flag
+        setFlag(HC);
+    }
+    HL += n;
+}
+
 void GB_CPU::SUB(const uint8_t n)
 {
     // Subtraction sets updates all flags
@@ -290,6 +309,19 @@ void GB_CPU::POP(uint16_t &reg)
 {
     reg = bus.read16Bit(SP);
     SP += 2;
+}
+
+void GB_CPU::SWAP(uint8_t &reg)
+{
+    // swaps the lower 4 bits with the upper 4 bits
+    uint8_t upper = (reg & 0xF0) >> 4;
+    reg = reg << 4 | upper;
+}
+
+void GB_CPU::RES(uint8_t bit, uint8_t &reg)
+{
+    const uint8_t mask = ~(1 << bit);
+    reg = reg & mask;
 }
 
 unsigned int GB_CPU::decodeAndExecute()
@@ -719,13 +751,6 @@ unsigned int GB_CPU::decodeAndExecute()
             return 0x0C;
         }
         // --> Loads to memory from register A
-        // LD [u16], A
-        case 0xEA:
-        {
-            LD(bus.read16Bit(PC), A);
-            PC += 2;
-            return 0x10;
-        }
         // LD [BC], A
         case 0x02:
         {
@@ -775,7 +800,22 @@ unsigned int GB_CPU::decodeAndExecute()
             LD(A, HL--);
             return 0x08;
         }
-        // ---- LDH loads ----
+        // --> Memory loads with u16 immediate values
+        // LD A, [u16]
+        case 0xFA:
+        {
+            LD(A, bus.read16Bit(PC));
+            PC += 2;
+            return 0x10;
+        }
+        // LD [u16], A
+        case 0xEA:
+        {
+            LD(bus.read16Bit(PC), A);
+            PC += 2;
+            return 0x10;
+        }
+        // --> LDH loads
         // Load high, a type of load used to access the last 256 bytes of memory
         // LD [0xFF00 + u8], A
         case 0xE0:
@@ -856,6 +896,31 @@ unsigned int GB_CPU::decodeAndExecute()
             // This opcode is too specific and one off to really bother making a generic function for it
             bus.write8Bit(HL, bus.read8Bit(HL) + 1);
             return 0x0C;
+        }
+        // 16 bit incs (they dont effect flags so no need for a function)
+        // INC BC
+        case 0x03:
+        {
+            BC++;
+            return 0x08;
+        }
+        // INC DE
+        case 0x13:
+        {
+            DE++;
+            return 0x08;
+        }
+        // INC HL
+        case 0x23:
+        {
+            HL++;
+            return 0x08;
+        }
+        // INC SP
+        case 0x33:
+        {
+            SP++;
+            return 0x08;
         }
         // --> DEC's
         // DEC A
@@ -984,6 +1049,31 @@ unsigned int GB_CPU::decodeAndExecute()
         case 0xC6:
         {
             ADD(bus.read8Bit(PC++));
+            return 0x08;
+        }
+        // - 16 bit ADDS
+        // ADD HL, BC
+        case 0x09:
+        {
+            ADD16(BC);
+            return 0x08;
+        }
+        // ADD HL, DE
+        case 0x19:
+        {
+            ADD16(DE);
+            return 0x08;
+        }
+        // ADD HL, HL
+        case 0x29:
+        {
+            ADD16(HL);
+            return 0x08;
+        }
+        // ADD HL, SP
+        case 0x39:
+        {
+            ADD16(SP);
             return 0x08;
         }
         // --> ADC's : Addition + Carry flag :]
@@ -1380,6 +1470,12 @@ unsigned int GB_CPU::decodeAndExecute()
             JP();
             return 0x10;
         }
+        // JP HL
+        case 0xE9:
+        {
+            PC = HL;
+            return 0x04;
+        }
         // JP NZ, u16
         case 0xC2:
         {
@@ -1499,6 +1595,55 @@ unsigned int GB_CPU::decodeAndExecute()
             POP(PC);
             return 0x10;
         }
+        // RETI
+        case 0xD9:
+        {
+            IME = true;
+            POP(PC);
+            PC++;
+            return 0x10;
+        }
+        // RET NZ
+        case 0xC0:
+        {
+            if (!isFlagSet(Z))
+            {
+                POP(PC);
+                return 0x10;
+            }
+            return 0x08;
+        }
+        // RET NC
+        case 0xD0:
+        {
+            if (!isFlagSet(CY))
+            {
+                POP(PC);
+                return 0x10;
+            }
+            return 0x08;
+        }
+        // RET Z
+        case 0xC8:
+        {
+            if (isFlagSet(Z))
+            {
+                POP(PC);
+                return 0x10;
+            }
+            return 0x08;
+        }
+        // RET C
+        case 0xD8:
+        {
+            if (isFlagSet(CY))
+            {
+                POP(PC);
+                return 0x10;
+            }
+            return 0x08;
+        }
+
         // --> RST's - these are basically CALLS to constant addresses, cutting down on cycles significantly
         // RST 0
         case 0xC7:
@@ -1611,10 +1756,158 @@ unsigned int GB_CPU::decodeAndExecute()
             IME = true;
             return 0x04;
         }
+        // MISC.
+        // CPL
+        case 0x2F:
+        {
+            // get the ones compliment (inverted binary) of register A
+            A = ~A;
+            setFlag(N);
+            setFlag(HC);
+            return 0x04;
+        }
+        // CCF
+        case 0x3F:
+        {
+            // flip the cary flag
+            clearFlag(N);
+            clearFlag(HC);
+            if (isFlagSet(CY)) clearFlag(CY); else setFlag(CY);
+            return 0x04;
+        }
+        // CB -> not an instruction but rather a prefix for the extended 16 bit instructions
+        case 0xCB:
+        {
+            return executeExtended();
+        }
 
         default:
         {
             std::cout << "\x1b[1;31mUnknown opcode: " << std::setw(2) << std::setfill('0')<< std::hex <<
+                            static_cast<unsigned>(opcode) << "\x1b[1;0m" << std::endl;
+            // PC gets incremented everytime BEFORE the instruction gets executed, to acutually reflect what line
+            // the program stopped on, we decrement PC
+            PC -= 2;
+            printRegisters();
+            std::terminate();
+        }
+    }
+}
+
+unsigned int GB_CPU::executeExtended()
+{
+    fetch();
+    // many of the instructions can be decoded, making for a smaller function than a giant switch case
+    // map that indexes registers
+    // RES
+    if ((opcode & 0xF0) >= 0x80 && (opcode & 0xF0) <= 0xB0)
+    {
+        // find the bit the instruction performs on
+        uint8_t bit = ((opcode & 0xF) / 8 + ((opcode & 0xF0 - 0x80) * 2)) >> 4;
+        std::cout << std::hex << PC << std::endl;
+        switch (opcode & 0xF % 8)
+        {
+            case 0:
+            {
+                RES(bit, B);
+                break;
+            }
+            case 1:
+            {
+                RES(bit, C);
+                break;
+            }
+            case 2:
+            {
+                RES(bit, D);
+                break;
+            }
+            case 3:
+            {
+                RES(bit, E);
+                break;
+            }
+            case 4:
+            {
+                RES(bit, H);
+                break;
+            }
+            case 5:
+            {
+                RES(bit, L);
+                break;
+            }
+            case 6:
+            {
+                uint8_t byte = bus.read8Bit(HL);
+                RES(bit, D);
+                bus.write8Bit(HL, byte);
+                return 0x10;
+            }
+            case 7:
+            {
+                RES(bit, A);
+                break;
+            }
+        }
+        return 0x08;
+    }
+    switch (opcode)
+    {
+        // SWAP's
+        // SWAP A
+        case 0x37:
+        {
+            SWAP(A);
+            return 0x08;
+        }
+        // SWAP B
+        case 0x30:
+        {
+            SWAP(B);
+            return 0x08;
+        }
+        // SWAP C
+        case 0x31:
+        {
+            SWAP(C);
+            return 0x08;
+        }
+        // SWAP D
+        case 0x32:
+        {
+            SWAP(D);
+            return 0x08;
+        }
+        // SWAP E
+        case 0x33:
+        {
+            SWAP(E);
+            return 0x08;
+        }
+        // SWAP H
+        case 0x34:
+        {
+            SWAP(H);
+            return 0x08;
+        }
+        // SWAP L
+        case 0x35:
+        {
+            SWAP(L);
+            return 0x08;
+        }
+        // SWAP HL
+        case 0x36:
+        {
+            uint8_t byte = bus.read8Bit(HL);
+            SWAP(byte);
+            bus.write8Bit(HL, byte);
+            return 0x10;
+        }
+        default:
+        {
+            std::cout << "\x1b[1;31mUnknown opcode: cb" << std::setw(2) << std::setfill('0')<< std::hex <<
                             static_cast<unsigned>(opcode) << "\x1b[1;0m" << std::endl;
             // PC gets incremented everytime BEFORE the instruction gets executed, to acutually reflect what line
             // the program stopped on, we decrement PC

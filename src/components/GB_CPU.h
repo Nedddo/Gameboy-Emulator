@@ -108,12 +108,15 @@ class GB_CPU
         /*** decodes and executes... duh. Easier to put these together as one method - Returns the T-cycles for the
         entire fetch-decode-execute, this is obviously a simplification, but calculating this seems unnecessary */
         unsigned int decodeAndExecute();
+        // executes extended instructions
+        unsigned int executeExtended();
         // --------- GENERIC CPU INSTRUCTIONS ------------
         // most instructions in the Game Boy aren't unique, many do the same thing just with different operands
         // for example, there's something like >90 LD instructions - which are more or less the same
         // --> ARITHMETIC OPERATIONS
         /// adds specified regisater to A
         void ADD(uint8_t n);
+        void ADD16(uint16_t n);
         /// subtracts specified register from A
         void SUB(uint8_t n);
         /// essentially a subtraction where the result isn't stored, only updates flags
@@ -148,6 +151,9 @@ class GB_CPU
         void PUSH(uint16_t val);
         /// read from stack pointer to register,
         void POP(uint16_t& reg);
+        // --> extended
+        void SWAP(uint8_t& reg);
+        void RES(uint8_t bit, uint8_t& reg);
     public:
         /** set initial register values to their post boot rom values, the reason this isnt in the constructor is
         that in future, I may want to emulate the actual boot rom */
