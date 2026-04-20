@@ -103,7 +103,7 @@ class GB_CPU
         void keepFlag(const decltype(Z) flag) { F &= flag; }
         // sets opcode to the current byte at PC
         // --------- HELPER FUNCTIONS FOR THE MAIN STEP LOGIC -------------
-        void handleInterrupts();
+        unsigned int handleInterrupts();
         void fetch();
         /*** decodes and executes... duh. Easier to put these together as one method - Returns the T-cycles for the
         entire fetch-decode-execute, this is obviously a simplification, but calculating this seems unnecessary */

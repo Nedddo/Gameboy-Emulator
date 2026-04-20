@@ -20,7 +20,7 @@ void GB_CPU::init()
 }
 
 
-void GB_CPU::handleInterrupts()
+unsigned int GB_CPU::handleInterrupts()
 {
     // The IE register -> what interrupts should we handle
     const uint8_t IE = bus.read8Bit(0xFFFF);
@@ -37,33 +37,34 @@ void GB_CPU::handleInterrupts()
             CALL(VBLANK);
             // turn flag off
             bus.write8Bit(0xFF0F, 0x00);
-            return;
+            return 0x14;
         }
         if (handle & 0x02)
         {
             // checks if bit 1 is set, this corresponds to STAT
             CALL(STAT);
-            return;
+            return 0x14;
         }
         if (handle & 0x04)
         {
             // checks if bit 2 is set, this corresponds to TIMER
             CALL(TIMER);
-            return;
+            return 0x14;
         }
         if (handle & 0x08)
         {
             // checks if bit 3 is set, this corresponds to SERIAL
             CALL(SERIAL);
-            return;
+            return 0x14;
         }
         if (handle & 0x10)
         {
             // checks if bit 2 is set, this corresponds to JOYPAD (lowest priority)
             CALL(JOYPAD);
-            return;
+            return 0x14;
         }
     }
+    return 0;
 }
 
 void GB_CPU::fetch()
@@ -73,9 +74,11 @@ void GB_CPU::fetch()
 
 unsigned int GB_CPU::step()
 {
-    if (IME) handleInterrupts();
+    unsigned int ticks = 0;
+    if (IME) ticks += handleInterrupts();
     fetch();
-    return decodeAndExecute();
+    ticks += decodeAndExecute();
+    return ticks;
 }
 
 
@@ -1598,6 +1601,7 @@ unsigned int GB_CPU::decodeAndExecute()
         // RETI
         case 0xD9:
         {
+            std::cout << PC;
             IME = true;
             POP(PC);
             PC++;
@@ -1804,7 +1808,6 @@ unsigned int GB_CPU::executeExtended()
     {
         // find the bit the instruction performs on
         uint8_t bit = ((opcode & 0xF) / 8 + ((opcode & 0xF0 - 0x80) * 2)) >> 4;
-        std::cout << std::hex << PC << std::endl;
         switch (opcode & 0xF % 8)
         {
             case 0:
