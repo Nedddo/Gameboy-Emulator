@@ -26,6 +26,7 @@ void Emulator::step()
 // debug mode logic, formatting and static vars make it HUGE, its not that complex, but keeping it at the bottom, out of
 // the way to look nice
 // i have to break this shit up into helper mane - later!
+// terrible debugger, hjardly works
 void Emulator::handleDebugMode()
 {
     // Formatting and functionality based HEAVILY on sameboys debugger
